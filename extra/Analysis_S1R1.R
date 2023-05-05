@@ -37,23 +37,80 @@ n2 <- s2 %>% group_by(Replication, Cohort) %>% summarise(n=n())
 n3 <- s3 %>% group_by(Replication,Cohort) %>% summarise(n=n())
 
 
+# Get Maximum Education of Parents
+max_parents <- function(data){
+  for (i in 1:length(data$X)){
+  data$Max_Parents[i] <- max(data$Father_Edu[i], data$Mother_Edu[i])
+  data$Max_Cult_P[i] <- max(data$Father_Cultural[i], data$Mother_Cultural[i])
+  }
+  return(data)
+}
+
+s1 <- max_parents(s1)
+s2 <- max_parents(s2)
+s3 <- max_parents(s3)
+
+s1$Mother_Cultural[69]
+s1$Father_Cultural[69]
+s1$Max_Cult_P[69]
+
+
+s1$Max_Parents
+head(s3)
+
+
 # Per Cohort --------------------------------------------------------------
+
+
+# Test for Max_Parents ----------------------------------------------------
+"it does not seem to be a good idea to use Max_Parents when
+we use the categorical education variable. Coefficients for Max_Parents = NA
+because e.g., maximum education levels within a cohort are mostly same"
+
+test = s1 %>% filter(Replication == 1)
+unique(test$Cohort)
+
+test2 = test %>% filter(Cohort == 3)
+
+
+mod1= lm(test2$Edu_level~test2$Mother_Edu*test2$Father_Edu)
+summary(mod1) # NA 
+coef_m1 <- data.frame(t(data.frame(mod1$coefficients)))
+extra <- data.frame(coef(summary(mod1)))
+colnames(extra) <- c("Estimate", "SE", "t_stat", "p_value")
+extra.t <- data.frame(Intercept_SE = extra$SE[1], Mother_SE = extra$SE[2], Father_SE = extra$SE[3], Interaction_SE = extra$SE[4],
+                            Intercept_pr = extra$p_value[1], Mother_pr =extra$p_value[2], Father_pr = extra$p_value[3], Interaction_pr = extra$p_value[4])
+cbind(coef_m1, extra.t)
+unique(test2$Max_Parents) # Only 4
+
+
+
+
 
 # Regression Coefficients per Cohort + Rep -------------------------------------
 
 calculate_coefficients <- function(input_data) {
-  output_df <- data.frame(matrix(ncol = 5, nrow = 0))
-  colnames(output_df) <- c("Intercept", "Mother_Edu", "Father_Edu", "Replication", "Cohort")
+  output_df <- data.frame(matrix(ncol = 6, nrow = 0))
+  colnames(output_df) <- c("Intercept", "Mother_Edu", "Father_Edu", "Interaction", 
+                           "Replication", "Cohort")
   
   for (i in 1:10){
     df = input_data %>% filter(Replication == i)
     for (j in unique(df$Cohort)){
       df2 = df %>% filter(Cohort == j)
-      lm = lm(df2$Edu_level~df2$Mother_Edu+df2$Father_Edu)
+      lm = lm(df2$Edu_level~df2$Mother_Edu*df2$Father_Edu) # 2 main effects & 1 interaction effect
       coef_df <- data.frame(t(data.frame(lm$coefficients)))  # Transpose the coefficients dataframe
-      coef_df$Replication <- i  # Add the replication number 'i'
-      coef_df$Cohort <- j  # Add the cohort number 'j'
-      output_df <- rbind(output_df, coef_df)  # Append the row to the output dataframe
+      extra <- data.frame(coef(summary(lm)))
+      colnames(extra) <- c("Estimate", "SE", "t_stat", "p_value")
+      extra.t <- data.frame(Intercept_SE = extra$SE[1], Mother_SE = extra$SE[2], Father_SE = extra$SE[3], Interaction_SE = extra$SE[4],
+                            Intercept_pr = extra$p_value[1], Mother_pr =extra$p_value[2], Father_pr = extra$p_value[3], Interaction_pr = extra$p_value[4])
+      colnames(coef_df) <- c("Intercept", "Mother_Edu", "Father_Edu", "Interaction")
+      coef_df$Replication <- i  
+      coef_df$Cohort <- j  
+      binding <- cbind(coef_df, extra.t)
+      output_df <- rbind(output_df, binding)
+      # output_df <- rbind(output_df, coef_df)
+      
     }
   }
   
@@ -69,37 +126,42 @@ calculate_coefficients <- function(input_data) {
   return(output_df)
 }
 
+
+
+
 # Use the function with different data frames
 result_s1 <- calculate_coefficients(s1)
 result_s2 <- calculate_coefficients(s2)
 result_s3 <- calculate_coefficients(s3)
+head(result_s1)
 
 
-# Combine the data into one dataframe
-# df <- rbind(
-#   data.frame(Scenario = 1, Cohort = result_s1$Cohort, Mother = result_s1$Mother, Father = result_s1$Father),
-#   data.frame(Scenario = 2, Cohort = result_s2$Cohort, Mother = result_s2$Mother, Father = result_s2$Father),
-#   data.frame(Scenario = 3, Cohort = result_s3$Cohort, Mother = result_s3$Mother, Father = result_s3$Father)
-# )
+result_s1$Scenario = 1
+result_s2$Scenario = 2
+result_s3$Scenario = 3
+df <- rbind(result_s1, result_s2, result_s3)
+head(df)
 
-df <- rbind(
-  data.frame(Scenario = 1, Cohort = result_s1$Cohort, Mother = result_s1$df2.Mother_Edu, Father = result_s1$df2.Father_Edu),
-  data.frame(Scenario = 2, Cohort = result_s2$Cohort, Mother = result_s2$df2.Mother_Edu, Father = result_s2$df2.Father_Edu),
-  data.frame(Scenario = 3, Cohort = result_s3$Cohort, Mother = result_s3$df2.Mother_Edu, Father = result_s3$df2.Father_Edu)
-)
 # Create the plots
 ggplot(df, aes(x = Cohort)) +
-  geom_smooth(aes(y = Mother), method = "lm", color = "blue") +
-  geom_point(aes(y = Mother)) +
+  geom_smooth(aes(y = Mother_Edu), method = "loess", color = "blue") +
+  geom_point(aes(y = Mother_Edu)) +
   facet_wrap(~ Scenario, nrow = 3) +
   labs(x = "Cohort", y = "Mother") +
   theme_minimal()
 
 ggplot(df, aes(x = Cohort)) +
-  geom_smooth(aes(y = Father), method = "lm", color = "red") +
-  geom_point(aes(y = Father)) +
+  geom_smooth(aes(y = Father_Edu), method ="loess", color = "red") +
+  geom_point(aes(y = Father_Edu)) +
   facet_wrap(~ Scenario, nrow = 3) +
   labs(x = "Cohort", y = "Father") +
+  theme_minimal()
+
+ggplot(df, aes(x = Cohort)) +
+  geom_smooth(aes(y = Interaction), method = "loess", color = "green") +
+  geom_point(aes(y = Interaction)) +
+  facet_wrap(~ Scenario, nrow = 3) +
+  labs(x = "Cohort", y = "Mother*Father") +
   theme_minimal()
 
 
@@ -113,7 +175,7 @@ calculate_meanrank <- function(input_data) {
   for (i in 1:10){
     df = input_data %>% filter(Replication == i)
     for (j in unique(df$Cohort)){
-      df2 = df %>% filter(Cohort == j) %>% filter(rank(Mother_Cultural) < median(rank(Mother_Cultural)))
+      df2 = df %>% filter(Cohort == j) %>% filter(rank(Max_Cult_P) < median(rank(Max_Cult_P)))
       count = df2 %>% summarise(n = n())
       rk = rank(df2$Cultural)
       rank_df <- data.frame(data.frame(mean(rk), var(rk), count))  
@@ -138,6 +200,7 @@ calculate_meanrank <- function(input_data) {
 result2_s1 <- calculate_meanrank(s1)
 result2_s2 <- calculate_meanrank(s2)
 result2_s3 <- calculate_meanrank(s3)
+head(result2_s1)
 
 plot(result2_s1$Mean_Perc ~ result_s1$Cohort) 
 plot(result2_s2$Mean_Perc ~ result_s2$Cohort) 
