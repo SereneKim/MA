@@ -7,11 +7,16 @@ require(GGally)
 # install.packages("brms")
 library(brms)
 library(purrr)
+library(Hmisc)
+library(foreign)
+
+
+# Data -------------------------------------------------------------------
 
 rm(list=ls())
 
 setwd("/Users/serenekim/Desktop/Thesis_SeorinKim/MasterThesis_Seorin_Kim/data")
-
+ 
 data_all <- lapply(Sys.glob(paths = "s*r*_analysis.csv"), read.csv)
 
 # file_names <- Sys.glob(paths = "s*r*_analysis.csv")
@@ -84,8 +89,16 @@ cbind(coef_m1, extra.t)
 unique(test2$Max_Parents) # Only 4
 
 
+test2$Edu_level <- as.factor(test2$Edu_level)
+test2$Mother_Edu <- as.factor(test2$Mother_Edu)
+test2$Father_Edu <- as.factor(test2$Father_Edu)
 
-
+m2 <- polr(test2$Edu_level~ test2$Father_Edu, Hess = TRUE, method = "logistic")
+summary(m2)
+ctable <- coef(summary(m2))
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+ctable <- cbind(ctable, "p value" = p)
+ctable
 
 # Regression Coefficients per Cohort + Rep -------------------------------------
 
@@ -125,7 +138,6 @@ calculate_coefficients <- function(input_data) {
   # )
   return(output_df)
 }
-
 
 
 
