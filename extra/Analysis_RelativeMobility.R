@@ -23,18 +23,25 @@ folder_path = "/Users/serenekim/Desktop/Thesis_SeorinKim/MasterThesis_Seorin_Kim
 file_list <- list.files(path = folder_path, pattern = "^s\\d+r\\d+_analysis\\.csv$", full.names = TRUE)
 data_all <- lapply(file_list, read.csv)
 
+data_all[50]
 
 # file_names <- Sys.glob(paths = "s*r*_analysis.csv")
 # print(file_names)
 
 # Combine all data frames into a single list
-df_all <- reduce(data_all, rbind)
-  
+df_all <- reduce(data_all[1:30], rbind)
+df_extreme <- reduce(data_all[31:50], rbind)
+
+names(df_all)
+names(df_extreme) #spouse_edu variable added additionally (newer version of the function used in python)
+
 # do.call("rbind", data_all)
 
 s1 <- df_all %>% filter(Scenario == 1 & Generation != 1)
 s2 <- df_all %>% filter(Scenario == 2 & Generation != 1)
 s3 <- df_all %>% filter(Scenario == 3 & Generation != 1)
+s4 <- df_extreme %>% filter(Scenario == 4 & Generation != 1)
+s5 <- df_extreme %>% filter(Scenario == 5 & Generation != 1)
 
 # Correlation
 ggpairs(s1[, c("Cohort", "Edu_level", "Generation", "Mother_Edu", "Father_Edu")])
@@ -59,6 +66,8 @@ max_parents <- function(data){
 s1 <- max_parents(s1)
 s2 <- max_parents(s2)
 s3 <- max_parents(s3)
+s4 <- max_parents(s4)
+s5 <- max_parents(s5)
 
 s1$Mother_Cultural[69]
 s1$Father_Cultural[69]
@@ -221,6 +230,8 @@ result2_s3 <- calculate_coefficients2(s3)
 result_s1 <- calculate_coefficients(s1)
 result_s2 <- calculate_coefficients(s2)
 result_s3 <- calculate_coefficients(s3)
+result_s4 <- calculate_coefficients(s4)
+result_s5 <- calculate_coefficients(s5)
 head(result_s1)
 
 
@@ -229,6 +240,11 @@ result_s2$Scenario = 2
 result_s3$Scenario = 3
 df <- rbind(result_s1, result_s2, result_s3)
 head(df)
+
+result_s4$Scenario = 4
+result_s5$Scenario = 5
+df <- rbind(result_s4, result_s5)
+
 
 # Create the plots
 
@@ -280,6 +296,20 @@ ggplot(result_s3, aes(x = Cohort)) +
   facet_zoom( ylim = c(-3, 6)) +
   theme(legend.position="none")
 
+ggplot(result_s4, aes(x = Cohort)) +
+  geom_smooth(aes(y = Mother_Edu), method = "loess") +
+  geom_point(aes(y = Mother_Edu, alpha=0.5)) +
+  labs(x = "Cohort", y = "Mother") +
+  facet_zoom( ylim = c(-3, 6)) +
+  theme(legend.position="none")
+
+ggplot(result_s5, aes(x = Cohort)) +
+  geom_smooth(aes(y = Mother_Edu), method = "loess") +
+  geom_point(aes(y = Mother_Edu, alpha=0.5)) +
+  labs(x = "Cohort", y = "Mother") +
+  facet_zoom( ylim = c(-3, 6)) +
+  theme(legend.position="none")
+
 ## Father
 ggplot(result_s1, aes(x = Cohort)) +
   geom_smooth(aes(y = Father_Edu), method = "loess") +
@@ -302,6 +332,20 @@ ggplot(result_s3, aes(x = Cohort)) +
   facet_zoom( ylim = c(-3, 6)) +
   theme(legend.position="none")
 
+ggplot(result_s4, aes(x = Cohort)) +
+  geom_smooth(aes(y = Father_Edu), method = "loess") +
+  geom_point(aes(y = Father_Edu, alpha=0.5)) +
+  labs(x = "Cohort", y = "Father") +
+  facet_zoom( ylim = c(-3, 6)) +
+  theme(legend.position="none")
+
+ggplot(result_s5, aes(x = Cohort)) +
+  geom_smooth(aes(y = Father_Edu), method = "loess") +
+  geom_point(aes(y = Father_Edu, alpha=0.5)) +
+  labs(x = "Cohort", y = "Father") +
+  facet_zoom( ylim = c(-3, 6)) +
+  theme(legend.position="none")
+
 ## Interaction
 ggplot(result_s1, aes(x = Cohort)) +
   geom_smooth(aes(y = Interaction), method = "loess") +
@@ -318,6 +362,20 @@ ggplot(result_s2, aes(x = Cohort)) +
   theme(legend.position="none")
 
 ggplot(result_s3, aes(x = Cohort)) +
+  geom_smooth(aes(y = Interaction), method = "loess") +
+  geom_point(aes(y = Interaction, alpha=0.5)) +
+  labs(x = "Cohort", y = "Interaction") +
+  facet_zoom( ylim = c(-5, 6)) +
+  theme(legend.position="none")
+
+ggplot(result_s4, aes(x = Cohort)) +
+  geom_smooth(aes(y = Interaction), method = "loess") +
+  geom_point(aes(y = Interaction, alpha=0.5)) +
+  labs(x = "Cohort", y = "Interaction") +
+  facet_zoom( ylim = c(-5, 6)) +
+  theme(legend.position="none")
+
+ggplot(result_s5, aes(x = Cohort)) +
   geom_smooth(aes(y = Interaction), method = "loess") +
   geom_point(aes(y = Interaction, alpha=0.5)) +
   labs(x = "Cohort", y = "Interaction") +
@@ -359,6 +417,8 @@ calculate_meanrank <- function(input_data) {
 result2_s1 <- calculate_meanrank(s1)
 result2_s2 <- calculate_meanrank(s2)
 result2_s3 <- calculate_meanrank(s3)
+result2_s4 <- calculate_meanrank(s4)
+result2_s5 <- calculate_meanrank(s5)
 head(result2_s1)
 
 plot(result2_s1$Mean_Perc ~ result_s1$Cohort) 
@@ -388,6 +448,11 @@ df2 <- rbind(
   data.frame(Scenario = 3, Cohort = result2_s3$Cohort, Mean_Rank = result2_s3$mean.rk., Var_Rank = result2_s3$var.rk., Total = result2_s3$n, Perc = result2_s3$mean.rk./result2_s3$n)
 )
 
+df2 <- rbind(
+  data.frame(Scenario = 4, Cohort = result2_s4$Cohort, Mean_Rank = result2_s4$mean.rk., Var_Rank = result2_s4$var.rk., Total = result2_s4$n, Perc = result2_s4$mean.rk./result2_s4$n),
+  data.frame(Scenario = 5, Cohort = result2_s5$Cohort, Mean_Rank = result2_s5$mean.rk., Var_Rank = result2_s5$var.rk., Total = result2_s5$n, Perc = result2_s5$mean.rk./result2_s5$n)
+)
+
 
 
 # Create the plots (With Percentiles)
@@ -415,6 +480,20 @@ ggplot(result2_s2, aes(x = Cohort, y= mean.rk./n)) +
   theme(legend.position="none")
 
 ggplot(result2_s3, aes(x = Cohort, y= mean.rk./n)) +
+  geom_smooth( method = "loess") +
+  geom_point(aes(alpha=0.5)) +
+  labs(x = "Cohort", y = "Mean Rank") +
+  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
+  theme(legend.position="none")
+
+ggplot(result2_s4, aes(x = Cohort, y= mean.rk./n)) +
+  geom_smooth( method = "loess") +
+  geom_point(aes(alpha=0.5)) +
+  labs(x = "Cohort", y = "Mean Rank") +
+  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
+  theme(legend.position="none")
+
+ggplot(result2_s5, aes(x = Cohort, y= mean.rk./n)) +
   geom_smooth( method = "loess") +
   geom_point(aes(alpha=0.5)) +
   labs(x = "Cohort", y = "Mean Rank") +
