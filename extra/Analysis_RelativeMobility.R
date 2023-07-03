@@ -1,3 +1,6 @@
+
+rm(list=ls())
+
 library(dplyr)
 library(car)
 library(tibble)
@@ -14,9 +17,6 @@ library(ggforce)
 
 
 # Data -------------------------------------------------------------------
-
-rm(list=ls())
-
 setwd("/Users/serenekim/Desktop/Thesis_SeorinKim/MasterThesis_Seorin_Kim/data")
  
 folder_path = "/Users/serenekim/Desktop/Thesis_SeorinKim/MasterThesis_Seorin_Kim/data"
@@ -69,6 +69,8 @@ s3 <- max_parents(s3)
 s4 <- max_parents(s4)
 s5 <- max_parents(s5)
 
+# Scaling is possible but then interpretation becomes harder and it deosn't seem necessary given the same scales. 
+# Also, there's not much difference after plotting the coefficient regression (because it anyway scales a bit).
 s1$sMax_Cult_P <- scale(s1$Max_Cult_P, center = TRUE, scale = TRUE)
 s2$sMax_Cult_P <- scale(s2$Max_Cult_P, center = TRUE, scale = TRUE)
 s3$sMax_Cult_P <- scale(s3$Max_Cult_P, center = TRUE, scale = TRUE)
@@ -80,10 +82,7 @@ s2$sCultural <- scale(s2$Cultural, center = TRUE, scale = TRUE)
 s3$sCultural <- scale(s3$Cultural, center = TRUE, scale = TRUE)
 s4$sCultural <- scale(s4$Cultural, center = TRUE, scale = TRUE)
 s5$sCultural <- scale(s5$Cultural, center = TRUE, scale = TRUE)
-# scaling is possible but then interpretation becomes harder and it deosn't seem necessary given the same scales. 
-# Also, there's not much difference after plotting the coefficient regression (because it anyway scales a bit).
-unique(s1$sCultural)
-unique(s1$Cultural)
+
 
 # Per Cohort --------------------------------------------------------------
 
@@ -163,32 +162,6 @@ output_df <- cbind(output_df, ctable)
 # }
 
 
-## Linear With Max_Cult_P ---------------------------------------------------------
-
-calculate_coefficients <- function(input_data) {
-  output_df <- data.frame(matrix(ncol = 4, nrow = 0))
-  colnames(output_df) <- c("Intercept", "Parents_Edu", 
-                           "Replication", "Cohort")
-  for (i in 1:10){
-    df = input_data %>% filter(Replication == i)
-    for (j in unique(df$Cohort)){
-      df2 = df %>% filter(Cohort == j)
-      lm = lm(df2$Cultural~df2$Max_Cult_P)
-      coef_df <- data.frame(t(data.frame(lm$coefficients)))  # Transpose the coefficients dataframe
-      extra <- data.frame(coef(summary(lm)))
-      colnames(extra) <- c("Estimate", "SE", "t_stat", "p_value")
-      extra.t <- data.frame(Intercept_SE = extra$SE[1], Parents_SE = extra$SE[2],
-                            Intercept_pr = extra$p_value[1], Parents_pr =extra$p_value[2])
-      colnames(coef_df) <- c("Intercept", "Parents_Edu")
-      coef_df$Replication <- i  
-      coef_df$Cohort <- j  
-      binding <- cbind(coef_df, extra.t)
-      output_df <- rbind(output_df, binding)
-    }
-  }
-  return(output_df)
-}
-
 # cfr. Ordinal Logistic Regression With Edu (Not working well) --------------------------
 
 calculate_coefficients2 <- function(input_data) {
@@ -227,6 +200,33 @@ result2_s2 <- calculate_coefficients2(s2)
 result2_s3 <- calculate_coefficients2(s3)
 
 
+## Linear With Max_Cult_P ---------------------------------------------------------
+
+calculate_coefficients <- function(input_data) {
+  output_df <- data.frame(matrix(ncol = 4, nrow = 0))
+  colnames(output_df) <- c("Intercept", "Parents_Edu", 
+                           "Replication", "Cohort")
+  for (i in 1:10){
+    df = input_data %>% filter(Replication == i)
+    for (j in unique(df$Cohort)){
+      df2 = df %>% filter(Cohort == j)
+      lm = lm(df2$Cultural~df2$Max_Cult_P)
+      coef_df <- data.frame(t(data.frame(lm$coefficients)))  # Transpose the coefficients dataframe
+      extra <- data.frame(coef(summary(lm)))
+      colnames(extra) <- c("Estimate", "SE", "t_stat", "p_value")
+      extra.t <- data.frame(Intercept_SE = extra$SE[1], Parents_SE = extra$SE[2],
+                            Intercept_pr = extra$p_value[1], Parents_pr =extra$p_value[2])
+      colnames(coef_df) <- c("Intercept", "Parents_Edu")
+      coef_df$Replication <- i  
+      coef_df$Cohort <- j  
+      binding <- cbind(coef_df, extra.t)
+      output_df <- rbind(output_df, binding)
+    }
+  }
+  return(output_df)
+}
+
+
 # Apply the function  --------------------------------------------------------------------
 
 # Use the function with different data frames
@@ -235,8 +235,6 @@ result_s2 <- calculate_coefficients(s2)
 result_s3 <- calculate_coefficients(s3)
 result_s4 <- calculate_coefficients(s4)
 result_s5 <- calculate_coefficients(s5)
-head(result_s1)
-
 
 result_s1$Scenario = 1
 result_s2$Scenario = 2
@@ -291,26 +289,28 @@ ggplot(df_ex, aes(x = Cohort, color = label)) +
 dev.off()
 
 # Zoomed Plots (Reg Coeff) ------------------------------------------------------------
+'#636EFA', '#EF553B', '#00CC96'
+
 ggplot(result_s1, aes(x = Cohort)) +
-  geom_smooth(aes(y = Parents_Edu), method = "loess") +
-  geom_point(aes(y = Parents_Edu, alpha=0.5)) +
-  labs(x = "Cohort", y = "Parents") +
+  geom_smooth(aes(y = Parents_Edu), method = "loess", color = "#636EFA") +
+  geom_point(aes(y = Parents_Edu, alpha=0.5), color = "#636EFA") +
+  labs(x = "Cohort", y = "Regression Coefficient", title = "Scenario 1") +
   facet_zoom( ylim = c(-1, 1)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
 
 ggplot(result_s2, aes(x = Cohort)) +
-  geom_smooth(aes(y = Parents_Edu), method = "loess") +
-  geom_point(aes(y = Parents_Edu, alpha=0.5)) +
-  labs(x = "Cohort", y = "Parents") +
+  geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#EF553B') +
+  geom_point(aes(y = Parents_Edu, alpha=0.5), color ='#EF553B') +
+  labs(x = "Cohort", y = "Regression Coefficient", title = "Scenario 2") +
   facet_zoom( ylim = c(-1, 1)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
 
 ggplot(result_s3, aes(x = Cohort)) +
-  geom_smooth(aes(y = Parents_Edu), method = "loess") +
-  geom_point(aes(y = Parents_Edu, alpha=0.5)) +
-  labs(x = "Cohort", y = "Parents") +
+  geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#00CC96') +
+  geom_point(aes(y = Parents_Edu, alpha=0.5), color ='#00CC96') +
+  labs(x = "Cohort", y = "Regression Coefficient", title = "Scenario 3") +
   facet_zoom( ylim = c(-1, 1)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
 
 
 ## Extreme Cases
@@ -318,7 +318,7 @@ png(filename = "Zcoef_homo.png", width = 800, res = 100)
 ggplot(result_s4, aes(x = Cohort)) +
   geom_smooth(aes(y = Parents_Edu), method = "loess", color = "#EF553B") +
   geom_point(aes(y = Parents_Edu, alpha=0.5), color = "#EF553B") +
-  labs(x = "Cohort", y = "Parents", title = "True Homogamy") +
+  labs(x = "Cohort", y = "Regression Coefficient", title = "True Homogamy") +
   facet_zoom( ylim = c(-1, 1)) + 
   theme_light() + theme(legend.position="none") 
 dev.off()
@@ -327,11 +327,28 @@ png(filename = "Zcoef_hetero.png", width = 800, res = 100)
 ggplot(result_s5, aes(x = Cohort)) +
   geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#636EFA') +
   geom_point(aes(y = Parents_Edu, alpha=0.5), color = '#636EFA') +
-  labs(x = "Cohort", y = "Parents", title = "True Heterogamy") +
+  labs(x = "Cohort", y = "Regression Coefficient", title = "True Heterogamy") +
   facet_zoom( ylim = c(-1, 1)) +
   theme_light() + theme(legend.position="none") 
 dev.off()
 
+
+v4 <- result_s4 %>% group_by(Cohort) %>%  summarise(var = var(Parents_Edu))
+v5 <- result_s5 %>% group_by(Cohort) %>%  summarise(var = var(Parents_Edu))
+
+loess4 <- loess(Parents_Edu ~ Cohort, data=result_s4)
+summary(loess4)
+pred4 <- predict(loess4, result_s4, se=TRUE)
+pred4$se.fit
+
+loess5 <- loess(Parents_Edu ~ Cohort, data=result_s5)
+summary(loess5)
+pred5 <- predict(loess5, result_s5, se=TRUE)
+pred5$se.fit
+
+plot(pred5$se.fit)
+plot(pred4$se.fit)
+v4$var-v5$var #Homo - Hetero (Larger variances in Hetero)
 
 
 # Ranking per Cohort + Rep -----------------------------------------------------------------
