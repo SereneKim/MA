@@ -4,12 +4,13 @@ Welcome to the GitHub repository for my Master's thesis project titled "Educatio
 Agent-based modeling and simulation to explore their relationship." This repository serves as a central hub for all the code, data, and documentation related to the research conducted during the academic year 2023/2024 at Katholieke Universiteit Leuven (KU Leuven). The primary objective of this thesis is to explore the relationship between educational assortative mating and educational mobility using agent-based modeling (with the `mesa` package).
 
 ## Main folders
-The repository mainly consists of 5 folders, which include the following elements:
+The repository mainly consists of 6 folders, which include the following elements:
 1. Data: both existing data sets utilized to construct the simulation and the data generated from the simulation.
 2. Extra: all the R-scripts or Excel files that are used to additionally analyze the simulation data.
 3. Images: all the exported images.
 4. Notebooks: all the Jupyter notebooks for agent-based models and analysis.
 5. Scripts: all the Python scripts utilized in the analysis.
+6. Appendix: additional sources that are not the core of the thesis.
 
 ## How to run the simulation
 First, make sure to install the requirements:
