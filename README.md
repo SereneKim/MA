@@ -22,7 +22,16 @@ Then, run the following:
 ```
 mesa runserver
 ```
-Note that this simulation is based on the base scenario, where agents mate based on their scores and no special preference to homogamy or heterogamy exists. For detailed information about how agent-based models are designed and what I learned from them,  I invite you to explore my thesis.
+Note that this simulation is based on the `base scenario`, where agents mate based on their scores, and no special preference for homogamy or heterogamy exists. 
+
+## Summary of the simulation design
+The general flow of the simulation is as follows:
+![General flow](https://github.com/SereneKim/MasterThesis_Seorin_Kim/blob/main/images/flowchart_general.png)
+
+The agent's behavioral rules for meeting a spouse in the `base scenario` are as follows:
+![Spouse-seeking flow](https://github.com/SereneKim/MasterThesis_Seorin_Kim/blob/main/images/flowchart_spouse.png)
+
+For detailed information about how agent-based models are designed and what I learned from them,  I invite you to explore my thesis.
 
 ## Abstract
 .......to be added.....
