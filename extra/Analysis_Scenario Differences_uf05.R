@@ -37,16 +37,6 @@ hist(abs2b$Probability_mean)
 
 # ANOVA --------------------------------------------------------------------
 
-test <- abs1 %>% filter(Cohort == 3)
-test
-
-model0 <- lm(Probability ~ 1 + Scenario, data=test)
-a1 <- aov(model0)
-a11 <- summary(a1)
-as.matrix(a11)
-
-length(test$Replication)
-
 abs1 <- na.omit(abs1)
 abs2 <- na.omit(abs2)
 
@@ -55,6 +45,7 @@ compare3 <-  function(abs1){
   output <- list()
   for (i in unique(abs1$Cohort)) {
     df <- abs1 %>% filter(Cohort == i) 
+    df$Scenario <- as.factor(df$Scenario)
     # Check if there are at least two levels in the Scenario variable for the current cohort
     if (length(unique(df$Scenario)) > 2 & length(unique(df$Replication)) > 7) {
       # Fit the linear model
@@ -81,6 +72,7 @@ compare2 <- function(abs1){
   output <- list()
   for (i in unique(abs1$Cohort)) {
     df <- abs1 %>% filter(Cohort == i & Scenario != 1) 
+    df$Scenario <- as.factor(df$Scenario)
     # Check if there are at least two levels in the Scenario variable for the current cohort
     if (length(unique(df$Scenario)) >= 2 & length(unique(df$Replication)) > 7) {
       # Fit the linear model
@@ -103,25 +95,13 @@ sum2_abs2 <- compare2(abs2)
 
 # GLMM --------------------------------------------------------------------
 
-
-model1 <- lmer(formula = Probability ~ 1 + Cohort + (1 | Scenario), data=abs1, REML = TRUE)
-anova(model1)
-summary(model1)
-ranova(model1)
-
-
-model2 <- lmer(formula = Probability ~ 1 + Cohort + (1 | Scenario), data=abs2, REML = TRUE)
-anova(model2)
-summary(model2)
-ranova(model2)
-
-
 model3 <- lmer(formula = Probability_mean ~ 1  + Cohort + (1| Scenario), data=abs1b, REML = TRUE)
 anova(model3)
 summary(model3)
 ranova(model3)
 
 
+# Singular
 model4 <- lmer(formula = Probability_mean ~ 1 + Cohort + (1 | Scenario), data=abs2b, REML = TRUE)
 anova(model4)
 summary(model4)

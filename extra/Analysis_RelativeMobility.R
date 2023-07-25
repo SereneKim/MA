@@ -23,7 +23,6 @@ folder_path = "/Users/serenekim/Desktop/Thesis_SeorinKim/MasterThesis_Seorin_Kim
 file_list <- list.files(path = folder_path, pattern = "^s\\d+r\\d+_analysis\\.csv$", full.names = TRUE)
 data_all <- lapply(file_list, read.csv)
 
-data_all[50]
 
 # file_names <- Sys.glob(paths = "s*r*_analysis.csv")
 # print(file_names)
@@ -273,7 +272,7 @@ ggplot(df_ex, aes(x = Cohort, color = label)) +
   labs(x = "Cohort", y = "Parents") +
   theme_light() + theme(legend.position="none", strip.text.x = element_text(size = 10, colour = "black"))+
   theme(strip.background =element_rect(fill="#e6e5e3"))+ 
-  scale_color_manual(values=c('#636EFA', '#EF553B', '#00CC96'))
+  scale_color_manual(values=c('#EF553B','#636EFA'))
 dev.off()
 
 
@@ -285,39 +284,57 @@ ggplot(df_ex, aes(x = Cohort, color = label)) +
   labs(x = "Cohort", y = "Standard Error") +
   theme_light() + theme(legend.position="none", strip.text.x = element_text(size = 10, colour = "black"))+
   theme(strip.background =element_rect(fill="#e6e5e3"))+ 
-  scale_color_manual(values=c('#636EFA', '#EF553B', '#00CC96'))
+  scale_color_manual(values=c('#EF553B','#636EFA'))
 dev.off()
 
-# Zoomed Plots (Reg Coeff) ------------------------------------------------------------
-'#636EFA', '#EF553B', '#00CC96'
 
+# t-test ------------------------------------------------------------------
+# But these test with averages of all cohorts --> Unsure whether they are relevant because
+# the number of cohorts also differ. 
+leveneTest(df$Parents_Edu, group = df$label)
+t.test(result_s1$Parents_Edu, result_s2$Parents_Edu, var.equal = FALSE) #p-value = 0.8106
+t.test(result_s2$Parents_Edu, result_s3$Parents_Edu, var.equal = FALSE) #p-value = 0.7414
+t.test(result_s1$Parents_Edu, result_s3$Parents_Edu, var.equal = FALSE) #p-value = 0.6112
+
+leveneTest(df_ex$Parents_Edu, group = df_ex$Scenario)
+t.test(result_s4$Parents_Edu, result_s5$Parents_Edu, var.equal = TRUE) #p-value = 0.4253
+
+
+# Zoomed Plots (Reg Coeff) ------------------------------------------------------------
+
+
+png(filename = "Zcoef_scen1.png", width = 800, res = 100)
 ggplot(result_s1, aes(x = Cohort)) +
   geom_smooth(aes(y = Parents_Edu), method = "loess", color = "#636EFA") +
   geom_point(aes(y = Parents_Edu, alpha=0.5), color = "#636EFA") +
   labs(x = "Cohort", y = "Regression Coefficient", title = "Scenario 1") +
   facet_zoom( ylim = c(-1, 1)) +
   theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "Zcoef_scen2.png", width = 800, res = 100)
 ggplot(result_s2, aes(x = Cohort)) +
   geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#EF553B') +
   geom_point(aes(y = Parents_Edu, alpha=0.5), color ='#EF553B') +
   labs(x = "Cohort", y = "Regression Coefficient", title = "Scenario 2") +
   facet_zoom( ylim = c(-1, 1)) +
   theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "Zcoef_scen3.png", width = 800, res = 100)
 ggplot(result_s3, aes(x = Cohort)) +
   geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#00CC96') +
   geom_point(aes(y = Parents_Edu, alpha=0.5), color ='#00CC96') +
   labs(x = "Cohort", y = "Regression Coefficient", title = "Scenario 3") +
   facet_zoom( ylim = c(-1, 1)) +
   theme_light() + theme(legend.position="none") 
-
+dev.off()
 
 ## Extreme Cases
 png(filename = "Zcoef_homo.png", width = 800, res = 100)
 ggplot(result_s4, aes(x = Cohort)) +
-  geom_smooth(aes(y = Parents_Edu), method = "loess", color = "#EF553B") +
-  geom_point(aes(y = Parents_Edu, alpha=0.5), color = "#EF553B") +
+  geom_smooth(aes(y = Parents_Edu), method = "loess", color = "#636EFA") +
+  geom_point(aes(y = Parents_Edu, alpha=0.5), color = "#636EFA") +
   labs(x = "Cohort", y = "Regression Coefficient", title = "True Homogamy") +
   facet_zoom( ylim = c(-1, 1)) + 
   theme_light() + theme(legend.position="none") 
@@ -325,8 +342,8 @@ dev.off()
 
 png(filename = "Zcoef_hetero.png", width = 800, res = 100)
 ggplot(result_s5, aes(x = Cohort)) +
-  geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#636EFA') +
-  geom_point(aes(y = Parents_Edu, alpha=0.5), color = '#636EFA') +
+  geom_smooth(aes(y = Parents_Edu), method = "loess", color = '#EF553B') +
+  geom_point(aes(y = Parents_Edu, alpha=0.5), color = '#EF553B') +
   labs(x = "Cohort", y = "Regression Coefficient", title = "True Heterogamy") +
   facet_zoom( ylim = c(-1, 1)) +
   theme_light() + theme(legend.position="none") 
@@ -349,6 +366,9 @@ pred5$se.fit
 plot(pred5$se.fit)
 plot(pred4$se.fit)
 v4$var-v5$var #Homo - Hetero (Larger variances in Hetero)
+
+result_s1 %>% filter(abs(result_s1$Parents_Edu) > 2)
+result_s3 %>% filter(abs(result_s3$Parents_Edu) > 1)
 
 
 # Ranking per Cohort + Rep -----------------------------------------------------------------
@@ -390,27 +410,6 @@ result2_s3 <- calculate_meanrank(s3)
 result2_s4 <- calculate_meanrank(s4)
 result2_s5 <- calculate_meanrank(s5)
 
-# plot(result2_s1$Mean_Perc ~ result_s1$Cohort) 
-# plot(result2_s2$Mean_Perc ~ result_s2$Cohort) 
-# plot(result2_s3$Mean_Perc ~ result_s3$Cohort) 
-# 
-# min(result2_s1$Mean_Perc, na.rm = T)
-# min(result2_s2$Mean_Perc, na.rm = T)
-# min(result2_s3$Mean_Perc, na.rm = T)
-# 
-# median(result2_s1$Mean_Perc, na.rm = T)
-# median(result2_s2$Mean_Perc, na.rm = T)
-# median(result2_s3$Mean_Perc, na.rm = T)
-
-
-
-# Combine the data into one dataframe
-# df2 <- rbind(
-#   data.frame(Scenario = 1, Cohort = result2_s1$Cohort, Mean_Perc = result2_s1$Mean_Perc, VM_Rank = result2_s1$VM_Rank, Var_Total = result2_s1$Var_Total),
-#   data.frame(Scenario = 2, Cohort = result2_s2$Cohort, Mean_Perc = result2_s2$Mean_Perc, VM_Rank = result2_s2$VM_Rank, Var_Total = result2_s2$Var_Total),
-#   data.frame(Scenario = 3, Cohort = result2_s3$Cohort, Mean_Perc = result2_s3$Mean_Perc, VM_Rank = result2_s3$VM_Rank, Var_Total = result2_s3$Var_Total)
-# )
-
 df2 <- rbind(
   data.frame(Scenario = "Scenario 1", Cohort = result2_s1$Cohort, Mean_Rank = result2_s1$mean.rk., Var_Rank = result2_s1$var.rk., Total = result2_s1$n, Perc = result2_s1$mean.rk./result2_s1$n),
   data.frame(Scenario = "Scenario 2", Cohort = result2_s2$Cohort, Mean_Rank = result2_s2$mean.rk., Var_Rank = result2_s2$var.rk., Total = result2_s2$n, Perc = result2_s2$mean.rk./result2_s2$n),
@@ -447,37 +446,72 @@ ggplot(df2_ex, aes(x = Cohort, color = Scenario)) +
 dev.off()
 
 # Per Scenario (Zoomed Plots)
+png(filename = "rank_scens_1.png", width = 800, res = 100)
 ggplot(result2_s1, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
-  labs(x = "Cohort", y = "Mean Rank") +
+  geom_smooth( method = "loess", color = '#EF553B') +
+  geom_point(aes(alpha=0.5, color = '#EF553B')) +
+  labs(x = "Cohort", y = "Mean Rank",  title = "Scenario 1") +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "rank_scens_2.png", width = 800, res = 100)
 ggplot(result2_s2, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
-  labs(x = "Cohort", y = "Mean Rank") +
+  geom_smooth( method = "loess", color = '#636EFA') +
+  geom_point(aes(alpha=0.5), color = '#636EFA') +
+  labs(x = "Cohort", y = "Mean Rank", title = "Scenario 2") +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "rank_scens_3.png", width = 800, res = 100)
 ggplot(result2_s3, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
-  labs(x = "Cohort", y = "Mean Rank") +
+  geom_smooth( method = "loess", color = '#00CC96') +
+  geom_point(aes(alpha=0.5), color = '#00CC96') +
+  labs(x = "Cohort", y = "Mean Rank", title = 'Scenario 3') +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "rank_scens_homo.png", width = 800, res = 100)
 ggplot(result2_s4, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
-  labs(x = "Cohort", y = "Mean Rank") +
+  geom_smooth( method = "loess", color = '#EF553B') +
+  geom_point(aes(alpha=0.5), color = '#EF553B') +
+  labs(x = "Cohort", y = "Mean Rank", title = "True Homogamy") +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "rank_scens_hetero.png", width = 800, res = 100)
 ggplot(result2_s5, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
-  labs(x = "Cohort", y = "Mean Rank") +
+  geom_smooth( method = "loess", color = '#636EFA') +
+  geom_point(aes(alpha=0.5), color = '#636EFA') +
+  labs(x = "Cohort", y = "Mean Rank", title = "True Heterogamy") +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  theme_light() + theme(legend.position="none") 
+dev.off()
+
+v1.2 <- result2_s1 %>% group_by(Cohort) %>%  summarise(var = var(mean.rk.))
+v2.2 <- result2_s2 %>% group_by(Cohort) %>%  summarise(var = var(mean.rk.))
+v3.2 <- result2_s3 %>% group_by(Cohort) %>%  summarise(var = var(mean.rk.))
+
+# t-test ------------------------------------------------------------------
+# But these compare the averages.
+leveneTest(df2$Mean_Rank, group = df2$Scenario)
+t.test(result2_s1$mean.rk., result2_s2$mean.rk., var.equal = TRUE) #p-value = 0.0001037
+t.test(result2_s2$mean.rk., result2_s3$mean.rk., var.equal = TRUE) #p-value = 5.784e-05
+t.test(result2_s1$mean.rk., result2_s3$mean.rk., var.equal = TRUE) #p-value = 0.7508
+
+t2_1 <- result2_s2 %>% filter(result2_s2$Cohort <= 20)
+t3_1 <- result2_s3 %>% filter(result2_s3$Cohort <= 20)
+t.test(t2_1$mean.rk., t3_1$mean.rk., var.equal = TRUE) #p-value = 0.026
+
+#Extreme
+leveneTest(df2_ex$Mean_Rank, group = df2_ex$Scenario)
+t.test(result2_s4$mean.rk., result2_s5$mean.rk., var.equal = FALSE) #p-value = 2.688e-05
+
+t4_1 <- result2_s4 %>% filter(result2_s4$Cohort <= 20)
+t5_1 <- result2_s5 %>% filter(result2_s5$Cohort <= 20)
+t.test(t4_1$mean.rk., t5_1$mean.rk., var.equal = FALSE) #p-value = 3.224e-09
+
+
