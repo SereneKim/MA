@@ -201,26 +201,32 @@ ggplot(df2, mapping = aes(x = Cohort, color = Scenario)) +
 dev.off()
 
 # Per Scenario (Zoomed Plots)
+png(filename = "rank_scens_1_child3.png", width = 800, res = 100)
 ggplot(result2_s1, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
+  geom_smooth( method = "loess",color = '#EF553B') +
+  geom_point(aes(alpha=0.5), color = '#EF553B') +
   labs(x = "Cohort", y = "Mean Rank") +
-  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.55)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "rank_scens_2_child3.png", width = 800, res = 100)
 ggplot(result2_s2, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
+  geom_smooth( method = "loess", color = '#636EFA') +
+  geom_point(aes(alpha=0.5), color = '#636EFA') +
   labs(x = "Cohort", y = "Mean Rank") +
-  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.55)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
+png(filename = "rank_scens_3_child3.png", width = 800, res = 100)
 ggplot(result2_s3, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess") +
-  geom_point(aes(alpha=0.5)) +
+  geom_smooth( method = "loess", color = '#00CC96') +
+  geom_point(aes(alpha=0.5), color = '#00CC96') +
   labs(x = "Cohort", y = "Mean Rank") +
-  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
-  theme(legend.position="none")
+  facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.55)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
 
 v1.2 <- result2_s1 %>% group_by(Cohort) %>%  summarise(var = var(mean.rk.))
