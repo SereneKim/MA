@@ -301,8 +301,6 @@ t.test(result_s4$Parents_Edu, result_s5$Parents_Edu, var.equal = TRUE) #p-value 
 
 
 # Zoomed Plots (Reg Coeff) ------------------------------------------------------------
-
-
 png(filename = "Zcoef_scen1.png", width = 800, res = 100)
 ggplot(result_s1, aes(x = Cohort)) +
   geom_smooth(aes(y = Parents_Edu), method = "loess", color = "#636EFA") +
@@ -370,6 +368,54 @@ v4$var-v5$var #Homo - Hetero (Larger variances in Hetero)
 result_s1 %>% filter(abs(result_s1$Parents_Edu) > 2)
 result_s3 %>% filter(abs(result_s3$Parents_Edu) > 1)
 
+
+# SE ----------------------------------------------------------------------
+png(filename = "Zcoef_scen1_SE.png", width = 800, res = 100)
+ggplot(result_s1, aes(x = Cohort)) +
+  geom_smooth(aes(y = Parents_SE), method = "loess", color = "#636EFA") +
+  geom_point(aes(y = Parents_SE, alpha=0.5), color = "#636EFA") +
+  labs(x = "Cohort", y = "Standard Errors", title = "Scenario 1") +
+  facet_zoom( ylim = c(0, 1)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
+
+png(filename = "Zcoef_scen2_SE.png", width = 800, res = 100)
+ggplot(result_s2, aes(x = Cohort)) +
+  geom_smooth(aes(y = Parents_SE), method = "loess", color = '#EF553B') +
+  geom_point(aes(y = Parents_SE, alpha=0.5), color ='#EF553B') +
+  labs(x = "Cohort", y = "Standard Errors", title = "Scenario 2") +
+  facet_zoom( ylim = c(0, 1)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
+
+png(filename = "Zcoef_scen3_SE.png", width = 800, res = 100)
+ggplot(result_s3, aes(x = Cohort)) +
+  geom_smooth(aes(y = Parents_SE), method = "loess", color = '#00CC96') +
+  geom_point(aes(y = Parents_SE, alpha=0.5), color ='#00CC96') +
+  labs(x = "Cohort", y = "Standard Errors", title = "Scenario 3") +
+  facet_zoom( ylim = c(0, 1)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
+
+
+## Extreme Cases SE
+png(filename = "Zcoef_homo_SE.png", width = 800, res = 100)
+ggplot(result_s4, aes(x = Cohort)) +
+  geom_smooth(aes(y = Parents_SE), method = "loess", color = "#636EFA") +
+  geom_point(aes(y = Parents_SE, alpha=0.5), color = "#636EFA") +
+  labs(x = "Cohort", y = "Standard Errors", title = "True Homogamy") +
+  facet_zoom( ylim = c(0, 1)) + 
+  theme_light() + theme(legend.position="none") 
+dev.off()
+
+png(filename = "Zcoef_hetero_SE.png", width = 800, res = 100)
+ggplot(result_s5, aes(x = Cohort)) +
+  geom_smooth(aes(y = Parents_SE), method = "loess", color = '#EF553B') +
+  geom_point(aes(y = Parents_SE, alpha=0.5), color = '#EF553B') +
+  labs(x = "Cohort", y = "Standard Errors", title = "True Heterogamy") +
+  facet_zoom( ylim = c(0, 1)) +
+  theme_light() + theme(legend.position="none") 
+dev.off()
 
 # Ranking per Cohort + Rep -----------------------------------------------------------------
 
@@ -475,8 +521,8 @@ dev.off()
 
 png(filename = "rank_scens_homo.png", width = 800, res = 100)
 ggplot(result2_s4, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess", color = '#EF553B') +
-  geom_point(aes(alpha=0.5), color = '#EF553B') +
+  geom_smooth( method = "loess", color = '#636EFA') +
+  geom_point(aes(alpha=0.5), color = '#636EFA') +
   labs(x = "Cohort", y = "Mean Rank", title = "True Homogamy") +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
   theme_light() + theme(legend.position="none") 
@@ -484,8 +530,8 @@ dev.off()
 
 png(filename = "rank_scens_hetero.png", width = 800, res = 100)
 ggplot(result2_s5, aes(x = Cohort, y= mean.rk./n)) +
-  geom_smooth( method = "loess", color = '#636EFA') +
-  geom_point(aes(alpha=0.5), color = '#636EFA') +
+  geom_smooth( method = "loess", color = '#EF553B') +
+  geom_point(aes(alpha=0.5), color = '#EF553B') +
   labs(x = "Cohort", y = "Mean Rank", title = "True Heterogamy") +
   facet_zoom( xlim = c(0, 40), ylim = c(0.5, 0.6)) +
   theme_light() + theme(legend.position="none") 
